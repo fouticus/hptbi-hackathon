@@ -1,14 +1,11 @@
-title: "Your Hackathon Project Title"
+title: "KISS"
 version: v0.1
 language: R
 author:
-- name: Peter E. DeWitt
-  email: peter.dewitt@cuanschutz.edu
-  github: dewittpe
-- name: Author Two
-  email: author.two@school.edu
-  github: author2
+- name: Alex Fout
+    email: me@alexfout.com
+  github: fouticus
 description: >
-  This is where you can write a few sentences about your submission.  Modeling
-  approach, author contributions, etc.
-url: https://github.com/dewittpe/hackathon
+  Just some random forests, but I spent a lot of time trying to learn about the 
+  features and engineer features that made sense in the context of the problem.
+url: https://www.alexfout.com

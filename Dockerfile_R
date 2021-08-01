@@ -14,6 +14,9 @@ FROM r-base:latest
 
 ## R packages
 RUN R --vanilla --quiet -e "install.packages('glmnet', repo = 'https://cran.rstudio.com')"
+RUN R --vanilla --quiet -e "install.packages('randomForest', repo = 'https://cran.rstudio.com')"
+RUN R --vanilla --quiet -e "install.packages('dplyr', repo = 'https://cran.rstudio.com')"
+RUN R --vanilla --quiet -e "install.packages('tidyr', repo = 'https://cran.rstudio.com')"
 
 ################################################################################
 ##                HACKATHON USERS --- DO NOT EDIT THIS SECTION                ##

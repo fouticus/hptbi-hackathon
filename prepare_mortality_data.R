@@ -37,29 +37,10 @@ prepare_mortality_data <- function(training = TRUE) {
   ##############################################################################
   # User Defined Code starts here
 
-  hackathon_mortality_data$gcs_use <-
-    ifelse(is.na(hackathon_mortality_data$gcsed),
-           yes = hackathon_mortality_data$gcsicu,
-           no  = hackathon_mortality_data$gcsed)
-
-
-  # deal with a possible missing value in icpyn1
-  if (any(hackathon_mortality_data$icpyn1)) {
-
-    # if all information about type of monitor is missing then mark icpyn1 as 0
-    flags <-
-      as.integer(
-                 !(
-                     (hackathon_mortality_data$icptype1 == "" | is.na(hackathon_mortality_data$icptype1)) &
-                     (hackathon_mortality_data$icptype2 == "" | is.na(hackathon_mortality_data$icptype2)) &
-                     (hackathon_mortality_data$icptype3 == "" | is.na(hackathon_mortality_data$icptype3)) 
-                  )
-      )
-
-    idx <- which(is.na(hackathon_mortality_data$icpyn1))
-    hackathon_mortality_data$icpyn1[idx] <- flags[idx]
-  }
-  
+  Y <- hackathon_mortality_data$mortality
+  source(file.path("other_scripts", "data_prep.R"))
+  hackathon_mortality_data <- data_prep(hackathon_mortality_data, "mort")
+  hackathon_mortality_data$Y <- Y
 
   # User Defined Code ends here
   ##############################################################################

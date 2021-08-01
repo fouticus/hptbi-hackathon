@@ -36,21 +36,12 @@ prepare_fss_data <- function(training = TRUE) {
 
   ##############################################################################
   # User Defined data preperation code starts here
+  
+  Y <- hackathon_fss_data$fss_total
+  source(file.path("other_scripts", "data_prep.R"))
+  hackathon_fss_data <- data_prep(hackathon_fss_data, "fss")
+  hackathon_fss_data$Y <- Y
 
-  # deal with a possible missing value in icpyn1
-  if (any(hackathon_fss_data$icpyn1)) {
-
-    # if all information about type of monitor is missing then mark icpyn1 as 0
-    flags <-
-      as.integer(!(
-                     hackathon_fss_data$icptype1 == "" | is.na(hackathon_fss_data$icptype1) &
-                     hackathon_fss_data$icptype2 == "" | is.na(hackathon_fss_data$icptype2) &
-                     hackathon_fss_data$icptype3 == "" | is.na(hackathon_fss_data$icptype3) 
-                  ))
-
-    idx <- which(is.na(hackathon_fss_data$icpyn1))
-    hackathon_fss_data$icpyn1[idx] <- flags[idx]
-  }
 
   # User Defined Code ends here
   ##############################################################################

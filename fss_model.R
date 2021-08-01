@@ -15,13 +15,28 @@ fss_model <- function(data) {
 
   ##############################################################################
   # User code starts here
-  rtn <- lm(fss_total ~ age + female + icpyn1, data = data)
-
+  
+  Y <- data$Y
+  
+  # standardize columns and remember for testing
+  X <- data$X
+  X_mean <- apply(X, 2, function(x) mean(x, na.rm=T))
+  X_sd <- apply(X, 2, function(x) sd(x, na.rm=T))
+  X2 <- sapply(seq_len(ncol(X)), function(i){x2 <- (X[,i] - X_mean[i])/X_sd[i]; x2[is.na(x2)] <- 0; x2})
+  
+  # train model
+  loadNamespace("randomForest")
+  rtn <- list()
+  rtn$model <- randomForest::randomForest(X2, Y, ntree=2000, mtry=ncol(X2)/2, sampsize=ceiling(0.6*length(Y)))
+  rtn$X_mean <- X_mean
+  rtn$X_sd <- X_sd
+  
   # User code ends here
   ##############################################################################
 
   class(rtn) <- c("hackathon_fss_model", class(rtn))
   rtn
+
 }
 
 ################################################################################
@@ -46,7 +61,16 @@ predict.hackathon_fss_model <- function(object, newdata, ...) {
   # user defined code starts here
 
   as.integer(stats::predict.lm(object, newdata, type = "response", ...))
-
+  
+  X <- newdata$X
+  X_mean <- object$X_mean
+  X_sd <- object$X_sd
+  X2 <- sapply(seq_len(ncol(X)), function(i){x2 <- (X[,i] - X_mean[i])/X_sd[i]; x2[is.na(x2)] <- 0; x2})
+  
+  loadNamespace("randomForest")
+  pred <- getS3method("predict", "randomForest")(object$model, X2)
+  
+  return(pred)
 }
 
 ################################################################################
