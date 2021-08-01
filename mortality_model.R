@@ -58,7 +58,16 @@ predict.hackathon_mortality_model <- function(object, newdata, ...) {
   ##############################################################################
   # User Defined data preparation code starts here
   
-  X <- newdata$X
+  # make sure we have the same columns and in the same order as training
+  vars <- newdata$vars
+  X <- matrix(NA, nrow(newdata$X), length(vars))
+  for(i in seq_along(vars)){
+    if(vars[i] %in% names(newdata$X))
+      X[,i] <- newdata$X[[vars[i]]]
+  }
+  X <- as.data.frame(X)
+  
+  
   X_mean <- object$X_mean
   X_sd <- object$X_sd
   X2 <- sapply(seq_len(ncol(X)), function(i){x2 <- (X[,i] - X_mean[i])/X_sd[i]; x2[is.na(x2)] <- 0; x2})

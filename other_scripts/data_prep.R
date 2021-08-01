@@ -162,5 +162,5 @@ data_prep <- function(df, mode){
     arrange(idorder) %>% 
     select(-c(studyid, idorder))
   
-  list(X=df2)
+  list(X=df2, vars=names(df2))
 }
