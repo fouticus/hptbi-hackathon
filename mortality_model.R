@@ -26,7 +26,6 @@ mortality_model <- function(data) {
   X2 <- sapply(seq_len(ncol(X)), function(i){x2 <- (X[,i] - X_mean[i])/X_sd[i]; x2[is.na(x2)] <- 0; x2})
   
   # train model
-  loadNamespace("randomForest")
   rtn <- list()
   rtn$model <- randomForest::randomForest(X2, Y, ntree=1000, classwt=c(1-pmort, pmort))
   rtn$X_mean <- X_mean

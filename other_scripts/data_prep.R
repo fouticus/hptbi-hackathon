@@ -1,9 +1,27 @@
-library(dplyr)
-library(tidyr)
+#require(dplyr)
+#require(tidyr)
+#require(tibble)
+
+`%>%`   <- magrittr::`%>%`
+select  <- dplyr::select
+mutate  <- dplyr::mutate
+filter  <- dplyr::filter
+arrange <- dplyr::arrange
+case_when <- dplyr::case_when
+group_by  <- dplyr::group_by
+summarize <- dplyr::summarize
+ungroup   <- dplyr::ungroup
+left_join <- dplyr::left_join
+
+pivot_longer <- tidyr::pivot_longer
+pivot_wider  <- tidyr::pivot_wider
+add_case     <- tibble::add_case
+
 
 # data frame
 # mode: either "fss" or "mort"
 data_prep <- function(df, mode){
+  studyids <- df %>% select(studyid) %>% mutate(idorder = 1:nrow(df))
   admit_vars <- grep("admitto*", names(df), value=T)
   
   # demographics
@@ -29,23 +47,29 @@ data_prep <- function(df, mode){
                                  cathtype == "Arterial catheter" ~ "cath_dt_art",
                                  cathtype == "Peripherally inserted central catheter (PICC)" ~ "cath_dt_picc"
                                  )) %>%
-    group_by(studyid, cath_n, cathtype2) %>% summarize(cathdt = sum(cathdt)) %>% ungroup() %>%
+    group_by(studyid, cath_n, cathtype2) %>% 
+    summarize(cathdt = sum(cathdt)) %>% 
+    ungroup() %>%
     filter(cathdt > 0) %>%
-    pivot_wider(id_cols=c(studyid, cath_n), names_from=cathtype2, values_from=cathdt, values_fill=0) %>%
-    mutate(cath_dt_tot = cath_dt_cv + cath_dt_art + cath_dt_picc)
+    add_case(studyid = -999, cathtype2 = "cath_dt_cv") %>%
+    add_case(studyid = -999, cathtype2 = "cath_dt_art") %>%
+    add_case(studyid = -999, cathtype2 = "cath_dt_picc") %>%
+    tidyr::pivot_wider(id_cols=c(studyid, cath_n), names_from=cathtype2, values_from=cathdt, names_sort=T, values_fill=0) %>%
+    dplyr::mutate(cath_dt_tot = cath_dt_cv + cath_dt_art + cath_dt_picc) %>%
+    dplyr::filter(studyid != -999)
   # todo: time from cath type to fss? time from last cath to fss?
   
   # icu time, count
   df_icu <- df %>%
-    select(studyid, starts_with("admittoicu")) %>%
-    mutate(icudt1 = admittoicudc1,
+    dplyr::select(studyid, starts_with("admittoicu")) %>%
+    dplyr::mutate(icudt1 = admittoicudc1,
            icudt2 = admittoicudc2 - admittoicuadmit2,
            icudt3 = admittoicudc3 - admittoicuadmit3) %>% 
-    select(-starts_with("admittoicu")) %>%
-    pivot_longer(starts_with("icudt"), names_to="icudt_name", values_to="icu_dt") %>%
-    filter(!is.na(icu_dt), icu_dt > 1) %>%  
-    group_by(studyid) %>% 
-    summarize(icu_dt_tot = sum(icu_dt), icu_n = n()) %>% ungroup()
+    dplyr::select(-starts_with("admittoicu")) %>%
+    tidyr::pivot_longer(starts_with("icudt"), names_to="icudt_name", values_to="icu_dt") %>%
+    dplyr::filter(!is.na(icu_dt), icu_dt > 1) %>%  
+    dplyr::group_by(studyid) %>% 
+    dplyr::summarize(icu_dt_tot = sum(icu_dt), icu_n = dplyr::n()) %>% dplyr::ungroup()
     
   # intubation time, count
   df_int <- df %>%
@@ -63,10 +87,15 @@ data_prep <- function(df, mode){
                                 puplrcticu == "" ~ "pup_unknown",
                                 is.na(puplrcticu) ~ "pup_unknown",
                                 puplrcticu == "One Fixed" ~ "pup_one_fixed")) %>%
+    add_case(studyid = -999, pup_name = "pup_reactive") %>%
+    add_case(studyid = -999, pup_name = "pup_fixed") %>%
+    add_case(studyid = -999, pup_name = "pup_unknown") %>%
+    add_case(studyid = -999, pup_name = "pup_one_fixed") %>%
     mutate(val = 1) %>%
     pivot_wider(id_cols=studyid, names_from=pup_name, values_from=val, values_fill=0) %>% 
     mutate(pup_n_reactive = ifelse(pup_unknown==1, NA, 2*pup_reactive + pup_one_fixed)) %>%
-    select(-pup_fixed)
+    select(-pup_fixed) %>%
+    filter(studyid != -999)
   
   # icp monitor time, count
   df_icp <- df %>%
@@ -87,10 +116,14 @@ data_prep <- function(df, mode){
                                 icptype == "Ventriculostomy (External Ventricular Drain or EVD)" ~ "icp_dt_vent",
                                 icptype == "Other" ~ "icp_dt_other",
                                 icptype == "" ~ "icp_dt_other")) %>% 
+    add_case(studyid=-999, icptype2 = "icp_dt_intp") %>%
+    add_case(studyid=-999, icptype2 = "icp_dt_vent") %>%
+    add_case(studyid=-999, icptype2 = "icp_dt_other") %>%
     group_by(studyid, icp_n, icptype2) %>% summarize(icpdt = sum(icpdt)) %>% ungroup() %>% 
     filter(icpdt > 0) %>%
     pivot_wider(id_cols=c(studyid, icp_n), names_from=icptype2, values_from=icpdt, values_fill=0) %>% 
-    mutate(icp_dt_tot = icp_dt_intp + icp_dt_vent + icp_dt_other)
+    mutate(icp_dt_tot = icp_dt_intp + icp_dt_vent + icp_dt_other) %>%
+    filter(studyid != 999)
   
   # GCS variables
   df_gcs <- df %>% select(studyid, contains("gcs")) %>% select(-contains("yn"))
@@ -117,6 +150,7 @@ data_prep <- function(df, mode){
   
   
   df2 <- df_demo %>% 
+    left_join(studyid_order) %>%
     left_join(df_cath) %>%
     left_join(df_icu) %>% 
     left_join(df_int) %>% 
@@ -128,7 +162,9 @@ data_prep <- function(df, mode){
   if(mode=="fss"){
     df2 <- df2 %>% left_join(df_tfss)
   }
+  df2 <- df2 %>% 
+    arrange(idorder) %>% 
+    select(-c(studyid, idorder))
   
-  X <- df2 %>% select(-c(studyid)) 
-  list(X=X)
+  list(X=df2)
 }
