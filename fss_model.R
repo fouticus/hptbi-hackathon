@@ -60,8 +60,6 @@ predict.hackathon_fss_model <- function(object, newdata, ...) {
   ##############################################################################
   # user defined code starts here
 
-  as.integer(stats::predict.lm(object, newdata, type = "response", ...))
-  
   X <- newdata$X
   X_mean <- object$X_mean
   X_sd <- object$X_sd
@@ -70,7 +68,7 @@ predict.hackathon_fss_model <- function(object, newdata, ...) {
   loadNamespace("randomForest")
   pred <- getS3method("predict", "randomForest")(object$model, X2)
   
-  return(pred)
+  return(round(pred))
 }
 
 ################################################################################
