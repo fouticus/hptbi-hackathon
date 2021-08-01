@@ -28,6 +28,7 @@ fss_model <- function(data) {
   loadNamespace("randomForest")
   rtn <- list()
   rtn$model <- randomForest::randomForest(X2, Y, ntree=2000, mtry=ncol(X2)/2, sampsize=ceiling(0.6*length(Y)))
+  rtn$vars <- names(X)
   rtn$X_mean <- X_mean
   rtn$X_sd <- X_sd
   
@@ -59,7 +60,7 @@ predict.hackathon_fss_model <- function(object, newdata, ...) {
 
   ##############################################################################
   # user defined code starts here
-  vars <- newdata$vars
+  vars <- object$vars
   X <- matrix(NA, nrow(newdata$X), length(vars))
   for(i in seq_along(vars)){
     if(vars[i] %in% names(newdata$X))

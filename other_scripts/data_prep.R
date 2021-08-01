@@ -41,7 +41,8 @@ data_prep <- function(df, mode){
     select(studyid, cath_n, cathtype, cathdt) %>%
     mutate(cathtype2 = case_when(cathtype == "Central venous catheter" ~ "cath_dt_cv",
                                  cathtype == "Arterial catheter" ~ "cath_dt_art",
-                                 cathtype == "Peripherally inserted central catheter (PICC)" ~ "cath_dt_picc"
+                                 cathtype == "Peripherally inserted central catheter (PICC)" ~ "cath_dt_picc",
+                                 #TRUE ~ "cath_dt_other"
                                  )) %>%
     group_by(studyid, cath_n, cathtype2) %>% 
     summarize(cathdt = sum(cathdt)) %>% 
@@ -50,6 +51,7 @@ data_prep <- function(df, mode){
     add_case(studyid = -999, cathtype2 = "cath_dt_cv") %>%
     add_case(studyid = -999, cathtype2 = "cath_dt_art") %>%
     add_case(studyid = -999, cathtype2 = "cath_dt_picc") %>%
+    #add_case(studyid = -999, cathtype2 = "cath_dt_other") %>%
     tidyr::pivot_wider(id_cols=c(studyid, cath_n), names_from=cathtype2, values_from=cathdt, names_sort=T, values_fill=0) %>%
     dplyr::mutate(cath_dt_tot = cath_dt_cv + cath_dt_art + cath_dt_picc) %>%
     dplyr::filter(studyid != -999)
@@ -82,7 +84,8 @@ data_prep <- function(df, mode){
                                 puplrcticu == "Unknown" ~ "pup_unknown",
                                 puplrcticu == "" ~ "pup_unknown",
                                 is.na(puplrcticu) ~ "pup_unknown",
-                                puplrcticu == "One Fixed" ~ "pup_one_fixed")) %>%
+                                puplrcticu == "One Fixed" ~ "pup_one_fixed",
+                                TRUE ~ "pup_unknown")) %>%
     add_case(studyid = -999, pup_name = "pup_reactive") %>%
     add_case(studyid = -999, pup_name = "pup_fixed") %>%
     add_case(studyid = -999, pup_name = "pup_unknown") %>%
@@ -111,7 +114,8 @@ data_prep <- function(df, mode){
     mutate(icptype2 = case_when(icptype == "Intraparenchymal (Camino or bolt)" ~ "icp_dt_intp",
                                 icptype == "Ventriculostomy (External Ventricular Drain or EVD)" ~ "icp_dt_vent",
                                 icptype == "Other" ~ "icp_dt_other",
-                                icptype == "" ~ "icp_dt_other")) %>% 
+                                icptype == "" ~ "icp_dt_other",
+                                TRUE ~ "icp_dt_other")) %>% 
     add_case(studyid=-999, icptype2 = "icp_dt_intp") %>%
     add_case(studyid=-999, icptype2 = "icp_dt_vent") %>%
     add_case(studyid=-999, icptype2 = "icp_dt_other") %>%
@@ -162,5 +166,5 @@ data_prep <- function(df, mode){
     arrange(idorder) %>% 
     select(-c(studyid, idorder))
   
-  list(X=df2, vars=names(df2))
+  list(X=df2)
 }
