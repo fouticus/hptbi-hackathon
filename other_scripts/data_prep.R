@@ -1,7 +1,4 @@
-#require(dplyr)
-#require(tidyr)
-#require(tibble)
-
+# load some functions without loading the whole namespace
 `%>%`   <- magrittr::`%>%`
 select  <- dplyr::select
 mutate  <- dplyr::mutate
@@ -12,7 +9,6 @@ group_by  <- dplyr::group_by
 summarize <- dplyr::summarize
 ungroup   <- dplyr::ungroup
 left_join <- dplyr::left_join
-
 pivot_longer <- tidyr::pivot_longer
 pivot_wider  <- tidyr::pivot_wider
 add_case     <- tibble::add_case
@@ -150,7 +146,7 @@ data_prep <- function(df, mode){
   
   
   df2 <- df_demo %>% 
-    left_join(studyid_order) %>%
+    left_join(studyids) %>%
     left_join(df_cath) %>%
     left_join(df_icu) %>% 
     left_join(df_int) %>% 
