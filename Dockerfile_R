@@ -16,6 +16,8 @@ RUN apt-get install -qy libcurl4-openssl-dev libssl-dev libxml2-dev
 RUN R --vanilla --quiet -e "install.packages('glmnet', repo = 'https://cran.rstudio.com')"
 RUN R --vanilla --quiet -e "install.packages('randomForest', repo = 'https://cran.rstudio.com')"
 RUN R --vanilla --quiet -e "install.packages('dplyr', repo = 'https://cran.rstudio.com')"
+RUN R --vanilla --quiet -e "install.packages('magrittr', repo = 'https://cran.rstudio.com')"
+RUN R --vanilla --quiet -e "install.packages('tibble', repo = 'https://cran.rstudio.com')"
 RUN R --vanilla --quiet -e "install.packages('tidyr', repo = 'https://cran.rstudio.com')"
 
 ################################################################################
