@@ -10,6 +10,7 @@ FROM r-base:latest
 ## HACKATHON USERS - EDIT THE FOLLOWING LINES TO INSTALL NEEDED DEPENDENCIES  ##
 
 # system
+RUN apt-get update
 RUN apt-get install -qy libcurl4-openssl-dev libssl-dev libxml2-dev
 
 ## R packages
